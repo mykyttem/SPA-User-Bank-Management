@@ -71,14 +71,14 @@ def get_random_user(amount: int):
 
 
 # fast api
-class DataToReceive(BaseModel):
-    data: int
+class Data(BaseModel):
+    amount: int
 
 
 @app.post("/api/users")
-async def receive_data(amount: DataToReceive):
+async def add_user(amount: Data):
     # get amount 
-    amount = amount.data
+    amount = amount.amount
     user_data = get_random_user(amount=amount)
 
     try:
@@ -115,3 +115,28 @@ async def receive_data(amount: DataToReceive):
 
 
     return {"users": users_data}
+
+
+# delete from DB
+class DeleteUserData(BaseModel):
+    id: int
+
+
+@app.post("/api/users/delete")
+async def delete_user(id_user: DeleteUserData):
+    # get user id
+    id_user = id_user.id
+
+    try:
+        with engine.connect() as connection:
+            logger.info(f'Successfully connected to the database')
+
+            # delete from DB
+            connection.execute(Users.__table__.delete().where(Users.id == id_user))
+            connection.commit()
+
+            logger.warning(f"Delete user from database id = {id_user}")
+
+        logger.info("Connection to the database closed")
+    except (OperationalError, ProgrammingError, DatabaseError) as e:
+        logger.error(f"Connection failed. Error: {e}")

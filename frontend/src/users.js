@@ -13,7 +13,7 @@ const Users = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ data: amount }),
+                body: JSON.stringify({ amount: amount }),
             });
 
             const responseData = await response.json();
@@ -22,6 +22,25 @@ const Users = () => {
             console.error(error);
         }
     };
+
+    // delete
+    const delete_user = async (id_user) => {
+        try {
+            const endpoint = "http://localhost:8000/api/users/delete";
+            await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: id_user }),
+            });
+    
+            fetchDataFromApi();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    
 
     useEffect(() => {
         // Fetch data when the component mounts
@@ -52,9 +71,17 @@ const Users = () => {
                     <div key={index}>
                         <p>ID: {user.id}</p>
                         <p>Name: {user.first_name}</p>
-                        <p>Username: {user.user_name}</p>
+                        <p>Username: {user.username}</p>
                         <p>Email: {user.email}</p>
                         <p>Password: {user.password}</p>
+
+                        <button
+                            style={{ marginRight: '10px' }}
+                            onClick={() => delete_user(user.id)}
+                        >
+                            Delete
+                        </button>
+                        <button>Edit</button>
                         <hr />
                     </div>
                 ))
