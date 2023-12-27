@@ -3,8 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
+
 # routers
-from routers import users
+from routers import banks, users
 
 
 """
@@ -29,8 +30,9 @@ app.add_middleware(
 )
 
 
-# Include the routers
-app.include_router(users.router, prefix="/api/users")
+# routers
+app.include_router(users.router_user, prefix="/api")
+app.include_router(banks.router_banks, prefix="/api")
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ from parse_randomUser import random_user
     - edit user, delete
 """
 
-router = APIRouter()
+router_user = APIRouter()
 
 
 # Get amount random users
@@ -43,7 +43,7 @@ class EditUserData(BaseModel):
 
 
 # routes
-@router.post("/api/users")
+@router_user.post("/users")
 async def add_user(amount: Data):
     # get amount 
     amount = amount.amount
@@ -87,7 +87,7 @@ async def add_user(amount: Data):
     return {"users": users_data}
 
 
-@router.post("/api/users/delete")
+@router_user.post("/users/delete")
 async def delete_user(id_user: DeleteUserData):
     # get user id
     id_user = id_user.id
@@ -108,7 +108,7 @@ async def delete_user(id_user: DeleteUserData):
 
 
 # Update 
-@router.post("/api/users/edit")
+@router_user.post("/users/edit")
 async def edit_user(updated_data: EditUserData):
     try:
         with engine.connect() as connection:
