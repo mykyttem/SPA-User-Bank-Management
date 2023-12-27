@@ -6,5 +6,6 @@
 4. Install dependencies: `pip install -r requirements.txt`
 5. In file alembic.init and config, set own data
 6. `cd backend`
-7. for migrations database `alembic revision --autogenerate -m "Initial` 
-8. `alembic upgrade head`
+7. `cd db`
+8. for migrations database `alembic revision --autogenerate -m "Initial` 
+9. `alembic upgrade head`

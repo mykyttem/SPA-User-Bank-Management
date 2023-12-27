@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine
 
 # config
-from config import USER, PASSWORD, HOST, DATABASE
+from .config import USER, PASSWORD, HOST, DATABASE
 
 
 """

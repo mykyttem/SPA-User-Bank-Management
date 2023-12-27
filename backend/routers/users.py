@@ -8,8 +8,8 @@ from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 # files
 from log import logger, msg_connection_db, msg_close_db
-from database import engine
-from models import Users
+from db.database import engine
+from db.models import Users
 from parse_randomUser import random_user
 
 
