@@ -1,20 +1,17 @@
-# requests
-import requests
-from requests.exceptions import HTTPError
-
 # fast api
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from pydantic import BaseModel
+import uvicorn
+from pydantic import BaseModel, ValidationError
 
 # sqlalchemy
 from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 # files
-from log import logger
+from log import logger, msg_connection_db, msg_close_db
 from database import engine
 from models import Users
+from parse_randomUser import random_user
 
 
 """
@@ -22,6 +19,7 @@ from models import Users
     - get random user, when click button
     - save in DB
     - display always from db
+    - edit user, delete
 """
 
 
@@ -41,49 +39,37 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# request get random data user
-def get_random_user(amount: int):
-    try:
-        random_user_url = f"https://random-data-api.com/api/users/random_user?size={amount}"
-        response = requests.get(random_user_url)
-        response.raise_for_status()
-        jsonResponse = response.json()
 
-        users_list = []
-
-        for i in jsonResponse:
-            user_dict = {
-                "first_name": i["first_name"],
-                "username": i["username"],
-                "email": i["email"],
-                "password": i["password"]
-            }
-            users_list.append(user_dict)
-
-        return users_list
-
-    except HTTPError as http_err:
-        logger.error(f"HTTP error occurred: {http_err}")
-        raise
-    except Exception as err:
-        logger.error(f"Other error occurred: {err}")
-        raise
-
-
-# fast api
+# Get amount random users
 class Data(BaseModel):
     amount: int
 
 
+# Get id for delete from DB
+class DeleteUserData(BaseModel):
+    id: int
+
+# Get data edit user
+class EditUserData(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    email: str
+    password: str
+
+
+# routes
 @app.post("/api/users")
 async def add_user(amount: Data):
     # get amount 
     amount = amount.amount
-    user_data = get_random_user(amount=amount)
+    user_data = random_user(amount=amount)
+
 
     try:
         with engine.connect() as connection:
-            logger.info(f'Successfully connected to database')  
+            logger.info(msg_connection_db)  
 
             for user_dict in user_data:
                 # Save the users to the database
@@ -99,6 +85,7 @@ async def add_user(amount: Data):
                 {
                     "id": user.id,
                     "first_name": user.first_name,
+                    "last_name": user.last_name,
                     "username": user.username,
                     "email": user.email,
                     "password": user.password
@@ -106,7 +93,7 @@ async def add_user(amount: Data):
                 for user in users
             ]
 
-        logger.info("Connection to the database closed")
+        logger.info(msg_close_db)
     except (OperationalError, ProgrammingError, DatabaseError) as e:
         logger.error(f"Connection failed. Error: {e}")
 
@@ -117,11 +104,6 @@ async def add_user(amount: Data):
     return {"users": users_data}
 
 
-# delete from DB
-class DeleteUserData(BaseModel):
-    id: int
-
-
 @app.post("/api/users/delete")
 async def delete_user(id_user: DeleteUserData):
     # get user id
@@ -129,7 +111,7 @@ async def delete_user(id_user: DeleteUserData):
 
     try:
         with engine.connect() as connection:
-            logger.info(f'Successfully connected to the database')
+            logger.info(msg_connection_db)
 
             # delete from DB
             connection.execute(Users.__table__.delete().where(Users.id == id_user))
@@ -137,6 +119,44 @@ async def delete_user(id_user: DeleteUserData):
 
             logger.warning(f"Delete user from database id = {id_user}")
 
-        logger.info("Connection to the database closed")
+        logger.info(msg_close_db)
     except (OperationalError, ProgrammingError, DatabaseError) as e:
         logger.error(f"Connection failed. Error: {e}")
+
+
+# Update 
+@app.post("/api/users/edit")
+async def edit_user(updated_data: EditUserData):
+    try:
+        with engine.connect() as connection:
+            logger.info(msg_connection_db)
+
+            # Access data from the updated_data Pydantic model
+            id_user = updated_data.id
+            first_name = updated_data.first_name
+            last_name = updated_data.last_name
+            username = updated_data.username
+            email = updated_data.email
+            password = updated_data.password
+
+            # Update the user in the database
+            connection.execute(
+                Users.__table__.update().where(Users.id == id_user).values(
+                    first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    email=email,
+                    password=password
+                )
+            )
+            connection.commit()
+
+            logger.info(f"User with ID {id_user} updated in the database")
+
+        logger.info(msg_close_db)
+    except (OperationalError, ProgrammingError, DatabaseError) as e:
+        logger.error(f"Connection failed. Error: {e}")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
