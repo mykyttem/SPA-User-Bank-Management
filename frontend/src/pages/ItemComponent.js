@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 
 const ItemComponent = ({
   itemType,
@@ -21,6 +23,13 @@ const ItemComponent = ({
 }) => {
   return (
     <div className="container">
+      <Link to="/users" className="link">
+        Go to Users
+      </Link>
+      <Link to="/banks" className="link">
+        Go to Banks
+      </Link>
+
       <h1>{itemType}</h1>
       <button onClick={handleAddItems}>Add {itemType}</button>
       <input
