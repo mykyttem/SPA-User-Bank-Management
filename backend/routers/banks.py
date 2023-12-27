@@ -8,7 +8,7 @@ from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 from log import logger, msg_connection_db, msg_close_db
 from db.database import engine
 from db.models import Banks
-from parse_radnomBank import random_bank
+from parse_api import random_bank
 
 
 router_bank = APIRouter()
@@ -32,7 +32,7 @@ class EditBankData(BaseModel):
     swift_bic: str
 
 
-@router_bank.post("/banks/random")
+@router_bank.post("/banks/random")      
 async def add_random_banks(amount: AmountBanks):
     amount = amount.amount
     bank_data = random_bank(amount=amount)

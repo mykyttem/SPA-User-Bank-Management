@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import ItemComponent from './ItemComponent';
+
 
 const Banks = () => {
     // values
@@ -35,7 +37,7 @@ const Banks = () => {
     };
 
     // delete
-    const deleteBank = async (idBank) => {
+    const deleteBank = async (id_bank) => {
         try {
             const endpoint = "/api/banks/delete";
             await fetch(endpoint, {
@@ -43,10 +45,11 @@ const Banks = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ id: idBank }),
+                body: JSON.stringify({ id: id_bank }),
             });
 
-            fetchDataFromApi('database'); // Fetch from the database after deletion
+            // Fetch from the database after deletion
+            fetchDataFromApi('database'); 
         } catch (error) {
             console.error(error);
         }
@@ -93,99 +96,32 @@ const Banks = () => {
         fetchDataFromApi('database'); 
     }, []);
 
+    // Fetch new data when the button is clicked
+    const handleAddBanks = (event) => {
+        event.preventDefault();
+        fetchDataFromApi('random');
+    };
+
+
     return (
-        <div className="container">
-            <h1>Banks</h1>
-            <button onClick={() => fetchDataFromApi('random')}>Add bank</button>
-            <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="0"
-            />
+        <ItemComponent
+          itemType="Banks"
+          fetchDataFromApi={fetchDataFromApi}
 
-            <h2>List</h2>
+          deleteItem={deleteBank}
+          startEditing={startEditing}
+          cancelEditing={cancelEditing}
+          editItemData={editBankData}
+          editingItem={editingBank}
+          setEditingItem={setEditingBank}
 
-            {loading ? (
-                <h2>Loading....</h2>
-            ) : dataBanks.length > 0 ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Bank Name</th>
-                            <th>Routing Number</th>
-                            <th>Swift BIC</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dataBanks.map((bank) => (
-                            <tr key={bank.id}>
-                                {editingBank && editingBank.id === bank.id ? (
-                                    <>
-                                        <td>{bank.id}</td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingBank.bank_name}
-                                                onChange={(e) =>
-                                                    setEditingBank({
-                                                        ...editingBank,
-                                                        bank_name: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingBank.routing_number}
-                                                onChange={(e) =>
-                                                    setEditingBank({
-                                                        ...editingBank,
-                                                        routing_number: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingBank.swift_bic}
-                                                onChange={(e) =>
-                                                    setEditingBank({
-                                                        ...editingBank,
-                                                        swift_bic: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <button onClick={() => editBankData(editingBank)}>Save</button>
-                                            <button onClick={cancelEditing}>Cancel</button>
-                                        </td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td>{bank.id}</td>
-                                        <td>{bank.bank_name}</td>
-                                        <td>{bank.routing_number}</td>
-                                        <td>{bank.swift_bic}</td>
-                                        <td>
-                                            <button style={{ marginRight: '10px' }} onClick={() => deleteBank(bank.id)}>Delete</button>
-                                            <button onClick={() => startEditing(bank)}>Edit</button>
-                                        </td>
-                                    </>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            ) : (
-                <p>No banks available</p>
-            )}
-        </div>
+          data={dataBanks}
+          amount={amount}
+          setAmount={setAmount}
+
+          loading={loading}
+          handleAddItems={handleAddBanks} 
+        />
     );
 };
 

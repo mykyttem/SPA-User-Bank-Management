@@ -10,11 +10,11 @@ from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 from log import logger, msg_connection_db, msg_close_db
 from db.database import engine
 from db.models import Users
-from parse_randomUser import random_user
+from parse_api import random_user
 
 
 """
-    - get random user, when click button
+    - get random user
     - save in DB
     - display always from db
     - edit user, delete
@@ -42,17 +42,28 @@ class EditUserData(BaseModel):
     password: str
 
 
-# routes
-@router_user.post("/users")
-async def add_user(amount: Data):
-    # get amount 
+def handle_database_operation(operation, error_message):
+    try:
+        with engine.connect() as connection:
+            logger.info(msg_connection_db)
+            result = operation(connection)
+
+            logger.info(msg_close_db)
+            return result
+    except (OperationalError, ProgrammingError, DatabaseError) as e:
+        logger.error(f"Database operation failed. Error: {e}. {error_message}")
+        return []
+
+
+# for generating random user data
+@router_user.post("/users/random")
+async def add_random_users(amount: Data):
     amount = amount.amount
     user_data = random_user(amount=amount)
 
-
     try:
         with engine.connect() as connection:
-            logger.info(msg_connection_db)  
+            logger.info(msg_connection_db)
 
             for user_dict in user_data:
                 # Save the users to the database
@@ -83,6 +94,39 @@ async def add_user(amount: Data):
         # Set users_data to an empty list in case of an error
         users_data = []
 
+    return {"users": users_data}
+
+
+# routes
+@router_user.get("/users/database")
+async def get_users_from_database():
+    try:
+        with engine.connect() as connection:
+            logger.info(msg_connection_db)
+
+            # Fetch all users from the database
+            users_result = connection.execute(Users.__table__.select())
+            users = users_result.fetchall()
+
+            # Extract user data from the result set
+            users_data = [
+                {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "username": user.username,
+                    "email": user.email,
+                    "password": user.password
+                }
+                for user in users
+            ]
+
+        logger.info(msg_close_db)
+    except (OperationalError, ProgrammingError, DatabaseError) as e:
+        logger.error(f"Connection failed. Error: {e}")
+
+        # Set users_data to an empty list in case of an error
+        users_data = []
 
     return {"users": users_data}
 

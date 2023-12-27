@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ItemComponent from './ItemComponent';
 
 
 const Users = () => {
@@ -20,20 +21,21 @@ const Users = () => {
     const [editingUser, setEditingUser] = useState(null);
     const [loading, setLoading] = useState(false);
 
-
     // send amount, and get random data users
-    const fetchDataFromApi = async () => {
+    const fetchDataFromApi = async (type) => {
         try {
             setLoading(true);
 
             // send
-            const endpoint = "/api/users";
+            const endpoint = type === 'random' ? "/api/users/random" : "/api/users/database"; 
+            const method = type === 'random' ? "POST" : "GET";
+
             const response = await fetch(endpoint, {
-                method: "POST",
+                method: method,
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ amount: amount }),
+                body: type === 'random' ? JSON.stringify({ amount: amount }) : null,
             });
 
             // response
@@ -45,6 +47,7 @@ const Users = () => {
             setLoading(false);
         }
     };
+
 
     // delete
     const delete_user = async (id_user) => {
@@ -58,8 +61,8 @@ const Users = () => {
                 body: JSON.stringify({ id: id_user }),
             });
 
-            console.log({ id: id_user })
-            fetchDataFromApi();
+            // Fetch from the database after deletion
+            fetchDataFromApi('database');
         } catch (error) {
             console.error(error);
         }
@@ -94,7 +97,7 @@ const Users = () => {
                 body: JSON.stringify(requestData),
             });
     
-            fetchDataFromApi();
+            fetchDataFromApi('database');
             setEditingUser(null);
         } catch (error) {
             console.error(error);
@@ -104,137 +107,38 @@ const Users = () => {
 
     useEffect(() => {
         // Fetch data when the component mounts
-        fetchDataFromApi();
+        // Fetch from the database initially
+        fetchDataFromApi('database');
     }, []);
+
 
     // Fetch new data when the button is clicked
     const handleAddUsers = (event) => {
         event.preventDefault();
-        fetchDataFromApi();
+        fetchDataFromApi('random');
     };
 
+
     return (
-        <div className="container">
-            <h1>Users</h1>
-            <button onClick={handleAddUsers}>Add users</button>
-            <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="0"
-            />
+        <ItemComponent
+          itemType="Users"
+          fetchDataFromApi={fetchDataFromApi}
 
-            <h2>List</h2>
+          deleteItem={delete_user}
+          startEditing={startEditing}
+          cancelEditing={cancelEditing}
+          editItemData={editUserData}
+          
+          editingItem={editingUser}
+          setEditingItem={setEditingUser} 
 
-            {loading ? (
-                <h2>Loading....</h2>
-            ) : dataUser.length  > 0 ? (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>First name</th>
-                            <th>Last name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Password</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dataUser.map((user) => (
-                            <tr key={user.id}>
-                                {editingUser && editingUser.id === user.id ? (
-                                    <>
-                                        <td>{user.id}</td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingUser.first_name}
-                                                onChange={(e) =>
-                                                    setEditingUser({
-                                                        ...editingUser,
-                                                        first_name: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingUser.last_name}
-                                                onChange={(e) =>
-                                                    setEditingUser({
-                                                        ...editingUser,
-                                                        last_name: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingUser.username}
-                                                onChange={(e) =>
-                                                    setEditingUser({
-                                                        ...editingUser,
-                                                        username: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingUser.email}
-                                                onChange={(e) =>
-                                                    setEditingUser({
-                                                        ...editingUser,
-                                                        email: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <input
-                                                type="text"
-                                                value={editingUser.password}
-                                                onChange={(e) =>
-                                                    setEditingUser({
-                                                        ...editingUser,
-                                                        password: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </td>
-                                        <td>
-                                            <button onClick={() => editUserData(editingUser)}>Save</button>
-                                            <button onClick={cancelEditing}>Cancel</button>
-                                        </td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td>{user.id}</td>
-                                        <td>{user.first_name}</td>
-                                        <td>{user.last_name}</td>
-                                        <td>{user.username}</td>
-                                        <td>{user.email}</td>
-                                        <td>{user.password}</td>
-                                        <td>
-                                            <button style={{ marginRight: '10px' }} onClick={() => delete_user(user.id)}>Delete</button>
-                                            <button onClick={() => startEditing(user)}>Edit</button>
-                                        </td>
-                                    </>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+          data={dataUser}
+          amount={amount}
+          setAmount={setAmount}
 
-            ) : (
-                <p>No users available</p>
-            )}                  
-        </div>
+          loading={loading}
+          handleAddItems={handleAddUsers}
+        />
     );
 };
 
