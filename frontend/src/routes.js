@@ -1,9 +1,10 @@
 import { createBrowserRouter, Route, createRoutesFromElements, Navigate } from "react-router-dom";
 
-import Page404 from "./page404";
+import Page404 from "./pages/page404";
 import RootLayout from "./rootLayout";  
-import Users from "./users";
-import Banks from "./banks";
+import Users from "./pages/users";
+import Banks from "./pages/banks";
+
 
 const router = createBrowserRouter(
     createRoutesFromElements(

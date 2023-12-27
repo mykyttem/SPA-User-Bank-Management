@@ -14,7 +14,6 @@ const Users = () => {
      *  loading: Indicates whether data is currently being fetched.
     */
 
-
     // values
     const [amount, setAmount] = useState(0);
     const [dataUser, setDataUser] = useState([]);
