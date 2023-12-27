@@ -32,7 +32,7 @@ app.add_middleware(
 
 # routers
 app.include_router(users.router_user, prefix="/api")
-app.include_router(banks.router_banks, prefix="/api")
+app.include_router(banks.router_bank, prefix="/api")
 
 
 if __name__ == "__main__":

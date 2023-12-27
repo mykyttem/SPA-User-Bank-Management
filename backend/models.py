@@ -33,9 +33,9 @@ class Banks(Base):
 
     id = Column("id", Integer, primary_key=True, unique=True, autoincrement=True)
     
-    bank_name = Column("bank_name", String(20))
-    routing_number = Column("routing_number", String(20))
-    swift_bic = Column("swift_bic", String(20))
+    bank_name = Column("bank_name", String(50))
+    routing_number = Column("routing_number", Integer)
+    swift_bic = Column("swift_bic", String(50))
 
     # Establish a many-to-many relationship
     users = relationship("Users", secondary=user_bank_association, back_populates="banks")
