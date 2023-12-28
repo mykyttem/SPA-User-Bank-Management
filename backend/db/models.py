@@ -4,12 +4,12 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-user_bank_association = Table(
-    'user_bank_association',
-    Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('bank_id', Integer, ForeignKey('banks.id'))
-)
+class User_bank_association(Base):
+    __tablename__ = "user_bank_association"
+
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    bank_id = Column(Integer, ForeignKey('banks.id'), primary_key=True)
+
 
 # tables
 class Users(Base):
@@ -25,7 +25,7 @@ class Users(Base):
     password = Column("password", String(60), nullable=False)
 
     # Establish a many-to-many relationship
-    banks = relationship("Banks", secondary=user_bank_association, back_populates="users")
+    banks = relationship("Banks", secondary=User_bank_association, back_populates="users")
 
 
 class Banks(Base):
@@ -38,4 +38,4 @@ class Banks(Base):
     swift_bic = Column("swift_bic", String(50))
 
     # Establish a many-to-many relationship
-    users = relationship("Users", secondary=user_bank_association, back_populates="banks")
+    users = relationship("Users", secondary=User_bank_association, back_populates="banks")

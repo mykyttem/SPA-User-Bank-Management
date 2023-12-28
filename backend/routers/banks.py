@@ -2,17 +2,22 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 # sqlalchemy
+from sqlalchemy import select, exists
 from sqlalchemy.exc import ProgrammingError, OperationalError, DatabaseError
 
 # files
 from log import logger, msg_connection_db, msg_close_db
 from db.database import engine
-from db.models import Banks
+from db.models import Banks, Users, User_bank_association
 from parse_api import random_bank
 
 
 router_bank = APIRouter()
 
+
+class id_associate(BaseModel):
+    id_user: int
+    id_bank: int
 
 # Get amount random users
 class AmountBanks(BaseModel):
@@ -111,11 +116,21 @@ async def delete_bank(id_bank: DeleteBankData):
         with engine.connect() as connection:
             logger.info(msg_connection_db)
 
-            # delete from DB
-            connection.execute(Banks.__table__.delete().where(Banks.id == id_bank))
-            connection.commit()
+            # Check if there are any users associated with the bank
+            users_associated = connection.execute(
+                User_bank_association.__table__.select().where(User_bank_association.bank_id == id_bank)
+            )
+           
+            result = users_associated.fetchall()
+           
+            if not result:
+                connection.execute(Banks.__table__.delete().where(Banks.id == id_bank))
+                connection.commit()
 
-            logger.warning(f"Delete bank from database id = {id_bank}")
+                logger.warning(f"Bank with ID {id_bank} deleted from the database")
+            else:
+                # Users are associated with the bank, do not delete
+                return {"error": f"Cannot delete bank. Users are associated with it."}
 
         logger.info(msg_close_db)
     except (OperationalError, ProgrammingError, DatabaseError) as e:
@@ -148,4 +163,27 @@ async def edit_bank(updated_data: EditBankData):
 
         logger.info(msg_close_db)
     except (OperationalError, ProgrammingError, DatabaseError) as e:
+        logger.error(f"Connection failed. Error: {e}")
+
+
+@router_bank.post("/banks/associate_user")
+async def associate_user(id: id_associate):
+    id_user = id.id_user
+    id_bank = id.id_bank
+
+
+    try:
+        with engine.connect() as connection:
+            logger.info(msg_connection_db)
+
+            # Insert a new row into the user_bank_association table
+            connection.execute(
+                User_bank_association.__table__.insert().values(user_id=id_user, bank_id=id_bank)
+            )
+            connection.commit()
+
+            logger.info(f"User with ID {id_user} associated with bank ID {id_bank}")
+
+        logger.info(msg_close_db)
+    except (OperationalError, ProcessLookupError, DatabaseError) as e:
         logger.error(f"Connection failed. Error: {e}")

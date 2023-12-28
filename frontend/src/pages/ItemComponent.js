@@ -19,7 +19,10 @@ const ItemComponent = ({
   setAmount,
 
   loading,
-  handleAddItems
+  handleAddItems,
+
+  openModalWindow,
+  onBankSelect
 }) => {
   return (
     <div className="container">
@@ -206,6 +209,22 @@ const ItemComponent = ({
                         Delete
                       </button>
                       <button onClick={() => startEditing(item)}>Edit</button>
+
+                      {itemType === 'Banks' && (
+                        <>
+                          <span style={{ margin: '0 5px' }}></span>
+                          <button 
+                              className="add-user-btn"
+                              onClick={() => {
+                                  onBankSelect(item.id);
+                                  openModalWindow();
+                              }}
+                          >
+                              Associate user
+                          </button>
+                          
+                        </>
+                      )}
                     </td>
                   </>
                 )}
