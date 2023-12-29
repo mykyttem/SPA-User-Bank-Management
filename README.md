@@ -10,10 +10,8 @@ Users can be associated with multiple banks, and banks can have several associat
 
 1. Clone the repository: `git clone "repository_url"`
 2. Set your own data in the `alembic.ini`, `config`, `.env` files.
-3. Run `docker-compose up -d`.
-4. Check if the MySQL server is running with `docker ps`. If not, try `docker-compose restart db`.
-5. Build the Docker image: `docker build -t spa-app .` (replace "spa-app" with your preferred image name).
-6. Run the Docker container: `docker run spa-app`.
+3. Check if the MySQL server is running with `docker ps`. If not, try `docker-compose restart db`.
+4. Run `docker-compose up`.
 
 
 ### Method 2: Manual Setup
