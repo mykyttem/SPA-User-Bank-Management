@@ -91,3 +91,9 @@ The edit page must support updates for these relations. A bank cannot be deleted
 #### Database
 
 - MySQL
+
+---
+![Main page](demo/main_page.png)
+![users page](demo/users.png)
+![banks page](demo/banks.png)
+![associate users bank page](demo/associate_users_bank.png)
