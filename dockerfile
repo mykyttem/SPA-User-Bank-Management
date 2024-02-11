@@ -24,7 +24,7 @@ WORKDIR /backend
 COPY ./backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the backend
+# Copy the rest of the backend 
 COPY ./backend .
 
 # Set the working directory for subsequent commands
